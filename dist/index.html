@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Event Invitation</title>
+    <meta name="description" content="A premium invitation website.">
+    <meta name="theme-color" content="#b48a4d">
+    <meta property="og:title" content="Event Invitation">
+    <meta property="og:description" content="A premium invitation website.">
+    <meta property="og:image" content="assets/images/wedding-hero.jpg">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="assets/images/mf-logo-white-2026.png" type="image/png">
+    <link rel="apple-touch-icon" href="assets/images/mf-logo-white-2026.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Raleway:wght@100;200;300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="config.js"></script>
+    <script src="js/script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="opening" id="openingScreen" hidden>
+      <div class="opening__image" data-bg="hero"></div>
+      <div class="opening__balloons" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="opening__panel">
+        <p class="opening__guest-line" data-text="guestName"></p>
+        <h1 data-text="openingTitle"></h1>
+        <p class="opening__names" data-opening-name></p>
+        <button class="btn btn--light" id="openInvitation" type="button">Open Invitation</button>
+      </div>
+    </div>
+
+    <nav class="floating-nav" aria-label="Primary navigation">
+      <a href="#home" data-nav="home">Home</a>
+      <a href="#story" data-nav="story">Story</a>
+      <a href="#details" data-nav="details">Details</a>
+      <a href="#gallery" data-nav="gallery">Gallery</a>
+      <a href="#program" data-nav="program">Program</a>
+      <a href="#rsvp" data-nav="rsvp">RSVP</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" type="button">Menu</button>
+    </nav>
+
+    <button class="music-toggle" id="musicToggle" type="button" hidden aria-label="Play music">
+      <span class="music-toggle__play" aria-hidden="true"></span>
+      <span class="music-toggle__disc" aria-hidden="true"></span>
+      <span class="music-toggle__copy">
+        <span class="music-toggle__label">Play music</span>
+        <span class="music-toggle__hint">Listen to the music while you explore the details</span>
+      </span>
+      <span class="music-toggle__notes" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+    <audio id="bgMusic" loop preload="none"></audio>
+
+    <main id="main">
+      <header class="hero section" id="home">
+        <picture>
+          <source media="(max-width: 720px)" id="heroMobileSource">
+          <img id="heroImage" alt="">
+        </picture>
+        <div class="hero__overlay"></div>
+        <div class="hero__content reveal">
+          <p class="eyebrow" data-text="eventLabel"></p>
+          <h1 data-text="names"></h1>
+          <p class="hero__subtitle" data-text="subtitle"></p>
+          <time class="hero__date" data-text="displayDate"></time>
+        </div>
+        <a class="scroll-indicator" href="#welcome" aria-label="Scroll to welcome section"><span></span></a>
+      </header>
+
+      <section class="welcome section" id="welcome">
+        <div class="welcome-balloons" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="section__inner two-column">
+          <div class="section-kicker reveal">
+            <p class="eyebrow" data-text="welcomeKicker"></p>
+            <h2 data-text="welcomeTitle"></h2>
+          </div>
+          <div class="copy reveal">
+            <p data-text="introMessage"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="photo-break section" data-photo-strip="0" aria-label="Celebration photos"></section>
+
+      <section class="story section" id="story">
+        <div class="section__inner split">
+          <img class="portrait reveal" id="profilePhoto" alt="" loading="lazy">
+          <div class="copy reveal">
+            <p class="eyebrow" data-text="storyKicker"></p>
+            <h2 data-text="storyTitle"></h2>
+            <div data-html="fullStory"></div>
+            <div class="timeline" id="storyTimeline"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="photo-break section" data-photo-strip="1" aria-label="Celebration photos"></section>
+
+      <section class="details section" id="details">
+        <div class="section__inner">
+          <div class="center reveal">
+            <p class="eyebrow">The Details</p>
+            <h2 data-text="detailsTitle"></h2>
+          </div>
+          <div class="detail-grid reveal" id="detailsGrid"></div>
+          <div class="button-row reveal">
+            <a class="btn btn--highlight" id="detailsRsvpButton" target="_blank" rel="noreferrer">RSVP Now</a>
+          </div>
+        </div>
+      </section>
+
+      <!--<section class="photo-break section" data-photo-strip="2" aria-label="Celebration photos"></section>-->
+
+      <section class="treasures section" id="sixTreasures">
+        <div class="section__inner center reveal">
+          <p class="eyebrow">Gift Ceremony</p>
+          <h2>Six Meaningful Gifts</h2>
+          <p class="treasures__intro">Each symbolizing the blessings that have shaped our mother's life.</p>
+          <div class="treasures-list" aria-label="Six Treasures">
+            <article class="treasure-item">
+              <span aria-hidden="true">✨</span>
+              <div>
+                <h3>Faith</h3>
+                <p>Presented by Mary Ann Flores</p>
+              </div>
+            </article>
+            <article class="treasure-item">
+              <span aria-hidden="true">❤️</span>
+              <div>
+                <h3>Love</h3>
+                <p>Presented by Jay Ann Buladaco</p>
+              </div>
+            </article>
+            <article class="treasure-item">
+              <span aria-hidden="true">🌿</span>
+              <div>
+                <h3>Good Health</h3>
+                <p>Presented by Lotis Parroco</p>
+              </div>
+            </article>
+            <article class="treasure-item">
+              <span aria-hidden="true">👨‍👩‍👧‍👦</span>
+              <div>
+                <h3>Family</h3>
+                <p>Presented by Desiree Rose &amp; Ryan Allaba</p>
+              </div>
+            </article>
+            <article class="treasure-item">
+              <span aria-hidden="true">📖</span>
+              <div>
+                <h3>Wisdom</h3>
+                <p>Presented by Delia Cagmat</p>
+              </div>
+            </article>
+            <article class="treasure-item">
+              <span aria-hidden="true">🌟</span>
+              <div>
+                <h3>Happiness &amp; Prosperity</h3>
+                <p>Presented by Bobby &amp; Ella</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="ceremony-honors section" id="ceremonyHonors">
+        <div class="section__inner center reveal">
+          <p class="eyebrow">Ceremony Honors</p>
+          <h2>Roses, Treasure &amp; Blessings</h2>
+          <div class="honors-grid" aria-label="Ceremony Honors">
+            <details class="honors-group">
+              <summary>6 Roses</summary>
+              <ul>
+                <li>Judith Rivera</li>
+                <li>Gina Pañares</li>
+                <li>Josephine Florencio</li>
+                <li>Rosemarie Bug-os</li>
+                <li>Roziel Pagobo</li>
+                <li>Princess Torayno</li>
+              </ul>
+            </details>
+            <details class="honors-group">
+              <summary>6 Treasure</summary>
+              <ul>
+                <li>Mr. &amp; Mrs. Regie and Lorena Gomez</li>
+                <li>Mr. &amp; Mrs. Lutchie and Ondoy Ducot</li>
+                <li>Danielyn &amp; Helen Genon</li>
+              </ul>
+            </details>
+            <details class="honors-group">
+              <summary>6 Blessings</summary>
+              <ul>
+                <li>Gemma Belmes</li>
+                <li>Josephine Pañares</li>
+                <li>Susan Sabacajan</li>
+                <li>Arlyn Aleonar</li>
+                <li>Vanessa Estrella</li>
+                <li>Llanes Lignes</li>
+              </ul>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="countdown section" id="countdown">
+        <div class="section__inner center reveal">
+          <p class="eyebrow">Counting Down</p>
+          <h2 data-text="countdownTitle"></h2>
+          <div class="countdown-grid" id="countdownGrid" aria-live="polite"></div>
+          <p class="event-passed" id="eventPassed" hidden></p>
+        </div>
+      </section>
+
+      <section class="rsvp-tracker section" id="rsvpTracker">
+        <div class="section__inner center reveal">
+          <p class="eyebrow">RSVP Tracker</p>
+          <h2>Guest Count</h2>
+          <div class="tracker-grid" id="trackerGrid" aria-live="polite"></div>
+          <p class="tracker-note" id="trackerNote"></p>
+        </div>
+      </section>
+
+      <!--<section class="photo-break section" data-photo-strip="3" aria-label="Celebration photos"></section>-->
+
+      <section class="gallery section" id="gallery">
+        <div class="section__inner">
+          <div class="gallery-entry center reveal">
+            <p class="eyebrow">Gallery</p>
+            <h2 data-text="galleryTitle"></h2>
+            <button class="gallery-preview" id="galleryEnter" type="button" aria-label="Enter gallery">
+              <img id="galleryPreviewImage" alt="" loading="lazy">
+              <span>Enter Gallery</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="video section optional" id="videoSection">
+        <div class="section__inner center reveal">
+          <p class="eyebrow">Film</p>
+          <h2 data-text="videoTitle"></h2>
+          <div class="video-frame" id="videoFrame"></div>
+        </div>
+      </section>
+
+      <section class="program section" id="program">
+        <div class="section__inner">
+          <div class="center reveal">
+            <p class="eyebrow">Program</p>
+            <h2 data-text="programTitle"></h2>
+          </div>
+          <div class="program-list reveal" id="programList"></div>
+        </div>
+      </section>
+
+      <!--<section class="photo-break section" data-photo-strip="4" aria-label="Celebration photos"></section>-->
+
+      <section class="rsvp section" id="rsvp">
+        <div class="section__inner rsvp__inner">
+          <div class="copy reveal">
+            <p class="eyebrow">RSVP</p>
+            <h2 data-text="rsvpTitle"></h2>
+            <p data-text="rsvpInstructions"></p>
+            <p class="deadline" data-text="rsvpDeadline"></p>
+            <div class="button-row">
+              <a class="btn btn--highlight" id="rsvpButton" target="_blank" rel="noreferrer">RSVP Now</a>
+            </div>
+            <div class="rsvp-confirmation" id="rsvpConfirmation" hidden role="status" aria-live="polite"></div>
+          </div>
+          <div class="contact-card reveal" id="contactCard"></div>
+        </div>
+        <div class="section__inner form-wrap" id="formWrap"></div>
+        <div class="section__inner rsvp-flow" id="rsvpFlow" hidden></div>
+      </section>
+
+      <!--<section class="photo-break section" data-photo-strip="5" aria-label="Celebration photos"></section>-->
+
+      <section class="gift section optional" id="giftSection">
+        <div class="section__inner center reveal">
+          <p class="eyebrow">Gifts</p>
+          <h2 data-text="giftTitle"></h2>
+          <p data-text="giftMessage"></p>
+          <button class="btn btn--ghost" id="giftToggle" type="button">View Gift Details</button>
+          <div class="gift-details" id="giftDetails" hidden></div>
+        </div>
+      </section>
+
+      <section class="guest-guide section" id="guestGuide">
+        <div class="section__inner">
+          <div class="center reveal">
+            <p class="eyebrow">Guest Guide</p>
+            <h2>For a smooth celebration</h2>
+          </div>
+          <div class="guide-grid reveal" id="guideGrid"></div>
+          <div class="faq-wrap reveal">
+            <p class="eyebrow">Frequently Asked Questions</p>
+            <div class="faq-list" id="faqList"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      <p data-text="footerNames"></p>
+      <p data-text="footerMessage"></p>
+      <a id="socialLink" target="_blank" rel="noreferrer"></a>
+      <p class="footer__credit" data-text="credit"></p>
+      <img class="footer__logo" src="assets/images/mf-logo-white-2026.png" alt="Moumeants and Frames logo" loading="lazy">
+    </footer>
+
+    <div class="gallery-room" id="galleryRoom" hidden role="dialog" aria-modal="true" aria-label="Celebrant gallery">
+      <button class="gallery-room__close" id="galleryRoomClose" type="button" aria-label="Back to invitation">Back</button>
+      <div class="gallery-room__inner">
+        <div class="gallery-room__header center">
+          <p class="eyebrow">Gallery</p>
+          <h2>The Celebrant</h2>
+        </div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+    </div>
+
+    <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Photo gallery">
+      <button class="lightbox__close" id="lightboxClose" type="button" aria-label="Back to invitation">Back</button>
+      <button class="lightbox__prev" id="lightboxPrev" type="button" aria-label="Previous image">Prev</button>
+      <div class="lightbox__viewer">
+        <div class="lightbox__track" id="lightboxTrack" tabindex="0" aria-label="Celebrant gallery photos"></div>
+        <p class="lightbox__counter" id="lightboxCounter"></p>
+      </div>
+      <button class="lightbox__next" id="lightboxNext" type="button" aria-label="Next image">Next</button>
+    </div>
+  </body>
+</html>
