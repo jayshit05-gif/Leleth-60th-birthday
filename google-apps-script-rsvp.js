@@ -1,6 +1,16 @@
 const SHEET_NAME = "RSVP";
 const GUEST_SHEET_NAME = "Guest List";
 const TOTAL_GUESTS = 50;
+const GUEST_SLUG_ALIASES = {
+  "sk-parent": "Leberato & Ferdoniza",
+  "sk-parents": "Leberato & Ferdoniza",
+  "leberato-ferdoniza": "Leberato & Ferdoniza",
+  "leberato-and-ferdoniza": "Leberato & Ferdoniza",
+  "haydee-parent": "Mustiola & Avelino",
+  "haydee-parents": "Mustiola & Avelino",
+  "mustiola-avelino": "Mustiola & Avelino",
+  "mustiola-and-avelino": "Mustiola & Avelino"
+};
 
 function doGet(e) {
   const params = e.parameter || {};
@@ -68,7 +78,7 @@ function getStats_() {
 }
 
 function getGuestBySlug_(slug) {
-  const cleanSlug = String(slug || "").trim().toLowerCase();
+  const cleanSlug = normalizeGuestKey_(slug);
   if (!cleanSlug) return { ok: false, displayName: "", reason: "missing-slug" };
 
   const guestTable = getGuestTable_();
@@ -78,20 +88,65 @@ function getGuestBySlug_(slug) {
   const slugIndex = guestTable.slugIndex;
   const displayNameIndex = guestTable.displayNameIndex;
   const fullNameIndex = guestTable.fullNameIndex;
+  const aliasDisplayName = GUEST_SLUG_ALIASES[cleanSlug] || "";
+  const aliasKey = normalizeGuestKey_(aliasDisplayName);
+
+  if (aliasDisplayName) {
+    for (let index = 1; index < values.length; index += 1) {
+      const rowSlug = String(values[index][slugIndex] || "").trim();
+      const displayName = String(values[index][displayNameIndex] || "").trim();
+      const fullName = fullNameIndex >= 0 ? String(values[index][fullNameIndex] || "").trim() : "";
+      const rowKeys = [rowSlug, displayName, fullName].map(normalizeGuestKey_).filter(Boolean);
+
+      if (rowKeys.indexOf(aliasKey) >= 0) {
+        return {
+          ok: true,
+          slug: rowSlug,
+          displayName: displayName || aliasDisplayName,
+          fullName: fullName
+        };
+      }
+    }
+
+    return {
+      ok: true,
+      slug: String(slug || "").trim(),
+      displayName: aliasDisplayName,
+      fullName: aliasDisplayName
+    };
+  }
 
   for (let index = 1; index < values.length; index += 1) {
-    const rowSlug = String(values[index][slugIndex] || "").trim().toLowerCase();
-    if (rowSlug === cleanSlug) {
+    const rowSlug = String(values[index][slugIndex] || "").trim();
+    const displayName = String(values[index][displayNameIndex] || "").trim();
+    const fullName = fullNameIndex >= 0 ? String(values[index][fullNameIndex] || "").trim() : "";
+    const rowKeys = [
+      rowSlug,
+      displayName,
+      fullName
+    ].map(normalizeGuestKey_).filter(Boolean);
+
+    if (rowKeys.indexOf(cleanSlug) >= 0 || (aliasKey && rowKeys.indexOf(aliasKey) >= 0)) {
       return {
         ok: true,
-        slug: String(values[index][slugIndex] || "").trim(),
-        displayName: String(values[index][displayNameIndex] || "").trim(),
-        fullName: fullNameIndex >= 0 ? String(values[index][fullNameIndex] || "").trim() : ""
+        slug: rowSlug,
+        displayName: displayName || aliasDisplayName,
+        fullName: fullName
       };
     }
   }
 
   return { ok: false, displayName: "", reason: "slug-not-found" };
+}
+
+function normalizeGuestKey_(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
 }
 
 function getGuestTable_() {
