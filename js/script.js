@@ -337,7 +337,7 @@
   }
 
   function renderGallery() {
-    const gallery = images.gallery || [];
+    const gallery = uniqueGalleryItems(images.gallery || []);
     const grid = $("#galleryGrid");
     let active = 0;
     const galleryRoom = $("#galleryRoom");
@@ -348,8 +348,6 @@
     const lightboxCounter = $("#lightboxCounter");
     const lightboxTrack = $("#lightboxTrack");
     const closeButton = $("#lightboxClose");
-    let isProgrammaticScroll = false;
-    let scrollTimer = 0;
     if (galleryPreviewImage && gallery[0]) {
       galleryPreviewImage.src = gallery[0].src;
       galleryPreviewImage.alt = gallery[0].alt || gallery[0].caption || "Gallery preview";
@@ -364,37 +362,15 @@
     const updateCounter = () => {
       if (lightboxCounter) lightboxCounter.textContent = gallery.length ? `${active + 1} / ${gallery.length}` : "";
     };
-    const lightboxSlides = () => $$("[data-lightbox-slide]", lightboxTrack);
-    const nearestSlideIndex = () => {
-      const slides = lightboxSlides();
-      if (!slides.length) return 0;
-      let nearest = 0;
-      let nearestDistance = Infinity;
-      slides.forEach((slide, index) => {
-        const distance = Math.abs(slide.offsetLeft - lightboxTrack.scrollLeft);
-        if (distance < nearestDistance) {
-          nearest = index;
-          nearestDistance = distance;
-        }
-      });
-      return nearest;
-    };
     const scrollToActive = () => {
       if (!gallery.length) return;
       const slide = lightboxTrack.querySelector(`[data-lightbox-slide="${active}"]`);
       if (!slide) return;
-      window.clearTimeout(scrollTimer);
-      isProgrammaticScroll = true;
       lightboxTrack.scrollTo({
         left: slide.offsetLeft,
         behavior: "smooth"
       });
       updateCounter();
-      scrollTimer = window.setTimeout(() => {
-        isProgrammaticScroll = false;
-        active = nearestSlideIndex();
-        updateCounter();
-      }, 520);
     };
     const goTo = (index) => {
       if (!gallery.length) return;
@@ -471,11 +447,6 @@
       if (galleryRoom.hidden || !lightbox.hidden) return;
       if (eventKey.key === "Escape") closeGalleryRoom();
     });
-    lightboxTrack.addEventListener("scroll", () => {
-      if (isProgrammaticScroll) return;
-      active = nearestSlideIndex();
-      updateCounter();
-    }, { passive: true });
     let startX = 0;
     lightbox.addEventListener("touchstart", (eventTouch) => { startX = eventTouch.changedTouches[0].clientX; }, { passive: true });
     lightbox.addEventListener("touchend", (eventTouch) => {
@@ -484,6 +455,16 @@
         goTo(active + (delta < 0 ? 1 : -1));
       }
     }, { passive: true });
+  }
+
+  function uniqueGalleryItems(items) {
+    const seen = new Set();
+    return items.filter((item) => {
+      const src = item && item.src ? String(item.src).trim() : "";
+      if (!src || seen.has(src)) return false;
+      seen.add(src);
+      return true;
+    });
   }
 
   function renderPhotoBreaks() {

@@ -1,7 +1,7 @@
 /* Edit this file first. Change eventType to "wedding" or "birthday". */
 window.INVITATION_CONFIG = {
   eventType: "birthday", // Change to "wedding" or "birthday"
-  guestName: "Dear Jay-ar Guest", // Change to the guest's name
+  guestName: "Dear Jay-ar and Haydee", // Change to the guest's name
   guestLink: "?guest=Jay-ar%20Guest", // Change the guest query value for each guest link
   enableOpeningScreen: true,
   openingTitle: "You Are Cordially Invited",
@@ -187,7 +187,7 @@ window.INVITATION_CONFIG = {
         ]
       ],
       gallery: [
-        { src: "assets/images/A7P06746.jpg", alt: "Warm milestone portrait", caption: "A life beautifully celebrated." },
+        { src: "assets/images/A7P06651.jpg", alt: "Warm milestone portrait", caption: "A life beautifully celebrated." },
         { src: "assets/images/A7P06748.jpg", alt: "Elegant celebration texture", caption: "" },
         { src: "assets/images/A7P06314.jpg", alt: "Elegant celebration texture", caption: "" },
         { src: "assets/images/A7P06374.jpg", alt: "Elegant celebration texture", caption: "" },
@@ -260,7 +260,7 @@ window.INVITATION_CONFIG = {
   timeZone: "Asia/Manila",
   passedMessage: "Thank you for celebrating with us.",
   venueName: "D'Kusinera Cafe-Bistro",
-  venueAddress: "2nd Floor (above the 7/11), The Margarette Business Hotel, Sayre Highway, Purok 2, South Poblacion, Maramag, Bukidnon",
+  venueAddress: "Purok 2, South Poblacion, Maramag, 8714 Bukidnon, Philippines",
   googleMapsLink: "https://maps.app.goo.gl/n11PbqJxX9W7o2uk7",
   rsvpLink: "#rsvp",
   rsvpDeadline: "2026-08-03",
