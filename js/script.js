@@ -517,6 +517,7 @@
 
   function renderRsvp() {
     setLink("#rsvpButton", config.rsvpLink);
+    setLink("#floatingRsvpButton", config.rsvpLink);
     setupRsvpFlow();
     const contacts = [
       ["Contact Person", config.contactPerson],
@@ -1035,7 +1036,13 @@
   function setLink(selector, url) {
     const node = $(selector);
     if (!node) return;
-    if (safeUrl(url)) node.href = url;
+    if (safeUrl(url)) {
+      node.href = url;
+      if (String(url).trim().startsWith("#")) {
+        node.removeAttribute("target");
+        node.removeAttribute("rel");
+      }
+    }
     else node.hidden = true;
   }
 
@@ -1106,6 +1113,7 @@
 
   function safeUrl(url) {
     if (!has(url)) return false;
+    if (/^#[A-Za-z][\w:.-]*$/.test(String(url).trim())) return true;
     if (/^(assets\/|\.\/|\.\.\/|\/)/.test(url)) return true;
     try {
       const parsed = new URL(url);

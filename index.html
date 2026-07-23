@@ -61,6 +61,9 @@
         <span></span>
       </span>
     </button>
+    <a class="floating-rsvp" id="floatingRsvpButton" href="#rsvp" data-rsvp-action aria-label="RSVP now">
+      <span>RSVP</span>
+    </a>
     <audio id="bgMusic" loop preload="none"></audio>
 
     <main id="main">
@@ -120,7 +123,7 @@
           </div>
           <div class="detail-grid reveal" id="detailsGrid"></div>
           <div class="button-row reveal">
-            <a class="btn btn--highlight" id="detailsRsvpButton" target="_blank" rel="noreferrer">RSVP Now</a>
+            <a class="btn btn--highlight" id="detailsRsvpButton" href="#rsvp">RSVP Now</a>
           </div>
         </div>
       </section>
@@ -279,7 +282,7 @@
             <p data-text="rsvpInstructions"></p>
             <p class="deadline" data-text="rsvpDeadline"></p>
             <div class="button-row">
-              <a class="btn btn--highlight" id="rsvpButton" target="_blank" rel="noreferrer">RSVP Now</a>
+              <a class="btn btn--highlight" id="rsvpButton" href="#rsvp">RSVP Now</a>
             </div>
             <div class="rsvp-confirmation" id="rsvpConfirmation" hidden role="status" aria-live="polite"></div>
           </div>
