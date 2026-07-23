@@ -1,0 +1,14 @@
+node_modules/
+.vercel/
+.env
+.env.*
+!.env.example
+
+dist/
+.openai/
+sites-native-deploy/
+site-deploy.tar.gz
+
+spreadsheet-work/node_modules/
+.agents/
+.codex/

@@ -1,0 +1,8 @@
+.git/
+.agents/
+.codex/
+.openai/
+dist/
+sites-native-deploy/
+site-deploy.tar.gz
+spreadsheet-work/node_modules/

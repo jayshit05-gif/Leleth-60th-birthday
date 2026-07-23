@@ -1,0 +1,10 @@
+{
+  "name": "leleths-60th-birthday",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static invitation site for Leleth's 60th Birthday.",
+  "scripts": {
+    "check": "node tools/check-vercel-ready.mjs",
+    "start": "node preview-server.js"
+  }
+}
