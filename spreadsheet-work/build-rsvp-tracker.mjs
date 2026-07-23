@@ -269,7 +269,7 @@ const guestValues = Array.from({ length: guestTableRows - 1 }, (_, index) => {
   const row = guestRecords[index];
   if (!row) return ["", "", "", "", "", null, "", null, "", "", "", "", null, ""];
   const displayName = row["Display Name"] || row["Guest Name / Household"] || "";
-  const cleanLink = `https://YOUR-DOMAIN.com/?guest=${encodeURIComponent(displayName).replaceAll("%20", "+")}`;
+  const cleanLink = `https://YOUR-DOMAIN.com/?guest=${encodeURIComponent(row["Slug"] || "").replaceAll("%20", "+")}`;
   return [
     row["Invite ID"],
     row["Slug"],

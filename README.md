@@ -247,3 +247,11 @@ rsvpTracker: {
 ```
 
 The invitation will submit RSVPs to the Sheet and the tracker will refresh from it.
+
+Guest links may use the `Slug` column:
+
+```text
+https://your-vercel-domain.vercel.app/?guest=mary-ann-i-flores
+```
+
+The website asks the same Apps Script URL for the matching `Guest List` row and displays the exact `Display Name` value. After changing `google-apps-script-rsvp.js`, redeploy the Apps Script web app so the live website can use the updated lookup.

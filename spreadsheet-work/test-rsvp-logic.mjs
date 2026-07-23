@@ -24,9 +24,14 @@ function cleanGuestDisplayName(value) {
 }
 
 function getGuestName(rawName, fallback) {
-  const cleanName = String(rawName || fallback || "").replace(/\+/g, " ").replace(/\s+/g, " ").trim();
-  if (!cleanName) return "Dear Family and Friends";
+  const cleanName = String(fallback || "").replace(/\+/g, " ").replace(/\s+/g, " ").trim();
+  if (!cleanName) return "Dear Guest";
   return /^dear\s/i.test(cleanName) ? cleanName : `Dear ${cleanName}`;
+}
+
+function resolveGuestNameFromLookup(slug, lookupRows) {
+  const row = lookupRows.find((item) => String(item.slug || "").trim().toLowerCase() === String(slug || "").trim().toLowerCase());
+  return row && row.displayName ? `Dear ${row.displayName}` : "Dear Guest";
 }
 
 function trackerData(tracker, saved) {
@@ -68,15 +73,16 @@ function appsScriptStats(rows, totalGuests) {
 }
 
 const event = config[config.eventType];
+const lookedUpGuestName = resolveGuestNameFromLookup("mary-ann-i-flores", [{ slug: "mary-ann-i-flores", displayName: "Mary Ann" }]);
 const acceptedPayload = {
-  guest: cleanGuestDisplayName(getGuestName("Mary Ann I. Flores", config.guestName)),
+  guest: cleanGuestDisplayName(lookedUpGuestName),
   attendance: "accepts",
   guestCount: "2",
   message: "Happy birthday!",
   contact: "",
   eventName: event.names,
   submittedAt: "2026-07-13T00:00:00.000Z",
-  guestLink: "http://127.0.0.1:8787/index.html?guest=Mary%20Ann%20I.%20Flores",
+  guestLink: "http://127.0.0.1:8787/index.html?guest=mary-ann-i-flores",
 };
 const declinedPayload = { ...acceptedPayload, attendance: "declines", guestCount: "1" };
 
@@ -84,7 +90,8 @@ const tests = [
   assert("config event type is birthday", config.eventType === "birthday"),
   assert("tracker total is 50", config.rsvpTracker.totalGuests === 50, `got ${config.rsvpTracker.totalGuests}`),
   assert("apps script total is 50", /const TOTAL_GUESTS = 50;/.test(appsScriptSource)),
-  assert("guest URL display name is clean", acceptedPayload.guest === "Mary Ann I. Flores", `got ${acceptedPayload.guest}`),
+  assert("guest slug resolves to sheet display name", acceptedPayload.guest === "Mary Ann", `got ${acceptedPayload.guest}`),
+  assert("unknown guest slug falls back safely", cleanGuestDisplayName(resolveGuestNameFromLookup("missing", [])) === "Guest"),
   assert("event name is included in RSVP payload", acceptedPayload.eventName === "Leleth's 60th Birthday"),
   assert("sheet submit is connected to Apps Script", /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(config.rsvpTracker.appsScriptUrl || "")),
 ];

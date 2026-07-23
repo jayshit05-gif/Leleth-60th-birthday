@@ -10,9 +10,10 @@
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const has = (value) => value !== undefined && value !== null && String(value).trim() !== "";
   const query = new URLSearchParams(window.location.search);
-  const guestName = getGuestName();
-  const openedSessionKey = `invitationOpened:${guestName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "default"}`;
-  const rsvpStorageKey = `rsvpResponse:v2:${openedSessionKey}`;
+  const guestSlug = getGuestSlug();
+  let guestName = "Dear Guest";
+  let openedSessionKey = "";
+  let rsvpStorageKey = "";
   const eventStart = new Date(`${config.eventDate || ""}T${config.startTime || "00:00"}`);
   const eventEnd = new Date(`${config.eventDate || ""}T${config.endTime || config.startTime || "23:59"}`);
   let ambientAudio = null;
@@ -75,7 +76,9 @@
     return values[path] || "";
   }
 
-  function init() {
+  async function init() {
+    guestName = await resolveGuestName();
+    updateGuestStorageKeys();
     applyTheme();
     fillText();
     setupGuestNameFit();
@@ -1042,14 +1045,38 @@
   }
 
   function getGuestName() {
-    const rawName = query.get("guest") || query.get("to") || query.get("name") || config.guestName || "";
+    const rawName = query.get("to") || query.get("name") || config.guestName || "Guest";
     const cleanName = String(rawName).replace(/\+/g, " ").replace(/\s+/g, " ").trim();
-    if (!cleanName) return "Dear Family and Friends";
+    if (!cleanName) return "Dear Guest";
     return /^dear\s/i.test(cleanName) ? cleanName : `Dear ${cleanName}`;
   }
 
   function cleanGuestDisplayName(value) {
-    return String(value || "Family and Friends").replace(/^dear\s+/i, "").trim() || "Family and Friends";
+    return String(value || "Guest").replace(/^dear\s+/i, "").trim() || "Guest";
+  }
+
+  function getGuestSlug() {
+    return String(query.get("guest") || "").replace(/\+/g, " ").trim();
+  }
+
+  async function resolveGuestName() {
+    if (!has(guestSlug)) return getGuestName();
+    const tracker = config.rsvpTracker || {};
+    const trackerUrl = tracker.appsScriptUrl || tracker.apiUrl;
+    if (!safeUrl(trackerUrl)) return "Dear Guest";
+    try {
+      const data = await fetchJsonp(trackerUrl, { action: "guest", slug: guestSlug }, 4800);
+      const displayName = data && data.ok && has(data.displayName) ? String(data.displayName).trim() : "";
+      return displayName ? `Dear ${displayName}` : "Dear Guest";
+    } catch (error) {
+      return "Dear Guest";
+    }
+  }
+
+  function updateGuestStorageKeys() {
+    const keySource = guestSlug || cleanGuestDisplayName(guestName) || "guest";
+    openedSessionKey = `invitationOpened:${keySource.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "default"}`;
+    rsvpStorageKey = `rsvpResponse:v2:${openedSessionKey}`;
   }
 
   function cleanShareUrl() {
@@ -1101,14 +1128,19 @@
     } catch (error) {}
   }
 
-  function fetchJsonp(url, params = {}) {
+  function fetchJsonp(url, params = {}, timeoutMs = 8000) {
     return new Promise((resolve, reject) => {
       const callbackName = `rsvpStats_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       const script = document.createElement("script");
       const requestUrl = new URL(url, location.href);
+      const timeout = window.setTimeout(() => {
+        cleanup();
+        reject(new Error("Google Sheet lookup timed out"));
+      }, timeoutMs);
       Object.entries(params).forEach(([key, value]) => requestUrl.searchParams.set(key, value));
       requestUrl.searchParams.set("callback", callbackName);
       const cleanup = () => {
+        window.clearTimeout(timeout);
         delete window[callbackName];
         script.remove();
       };

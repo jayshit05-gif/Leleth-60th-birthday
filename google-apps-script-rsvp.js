@@ -1,18 +1,19 @@
 const SHEET_NAME = "RSVP";
+const GUEST_SHEET_NAME = "Guest List";
 const TOTAL_GUESTS = 50;
 
 function doGet(e) {
   const params = e.parameter || {};
-  const stats = getStats_();
+  const payload = params.action === "guest" ? getGuestBySlug_(params.slug || params.guest || "") : getStats_();
 
   if (params.callback) {
     return ContentService
-      .createTextOutput(params.callback + "(" + JSON.stringify(stats) + ");")
+      .createTextOutput(params.callback + "(" + JSON.stringify(payload) + ");")
       .setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
 
   return ContentService
-    .createTextOutput(JSON.stringify(stats))
+    .createTextOutput(JSON.stringify(payload))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -64,6 +65,41 @@ function getStats_() {
     pendingLabel: "Not Yet Responded",
     note: "Live from Google Sheet."
   };
+}
+
+function getGuestBySlug_(slug) {
+  const cleanSlug = String(slug || "").trim().toLowerCase();
+  if (!cleanSlug) return { ok: false, displayName: "" };
+
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getSheetByName(GUEST_SHEET_NAME);
+  if (!sheet) return { ok: false, displayName: "" };
+
+  const values = sheet.getDataRange().getValues();
+  if (values.length < 2) return { ok: false, displayName: "" };
+
+  const headers = values[0].map(function(header) {
+    return String(header || "").trim().toLowerCase();
+  });
+  const slugIndex = headers.indexOf("slug");
+  const displayNameIndex = headers.indexOf("display name");
+  const fullNameIndex = headers.indexOf("guest name / household");
+
+  if (slugIndex < 0 || displayNameIndex < 0) return { ok: false, displayName: "" };
+
+  for (let index = 1; index < values.length; index += 1) {
+    const rowSlug = String(values[index][slugIndex] || "").trim().toLowerCase();
+    if (rowSlug === cleanSlug) {
+      return {
+        ok: true,
+        slug: String(values[index][slugIndex] || "").trim(),
+        displayName: String(values[index][displayNameIndex] || "").trim(),
+        fullName: fullNameIndex >= 0 ? String(values[index][fullNameIndex] || "").trim() : ""
+      };
+    }
+  }
+
+  return { ok: false, displayName: "" };
 }
 
 function upsertGuest_(sheet, data) {
