@@ -492,17 +492,24 @@ p { margin: 0 0 1rem; }
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
+.opening__guest-stack {
+  display: inline-grid;
+  justify-items: start;
+  width: fit-content;
+  max-width: 100%;
+}
 .opening__guest-kicker {
   color: rgba(224,178,102,0.96);
   font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: 0.84rem;
+  font-size: clamp(0.74rem, 0.68rem + 0.22vw, 0.84rem);
   font-weight: 700;
   font-style: italic;
   letter-spacing: 0.22em;
   line-height: 1;
-  padding-left: 0.18em;
+  padding-left: 0.08em;
   justify-self: start;
-  margin-left: clamp(8px, 5%, 32px);
+  margin-left: clamp(2px, 0.22em, 8px);
+  margin-bottom: 1px;
   text-align: left;
   text-shadow: 0 0 16px rgba(216,132,43,0.36);
   text-transform: uppercase;
@@ -511,9 +518,9 @@ p { margin: 0 0 1rem; }
   display: block;
   max-width: 100%;
   min-width: 0;
-  justify-self: center;
+  justify-self: start;
   color: #fff8e7;
-  font-size: clamp(2.24rem, 3.72vw, 2.92rem);
+  font-size: clamp(2.08rem, 3.48vw, 2.72rem);
   font-weight: 400;
   letter-spacing: 0;
   line-height: 0.88;
@@ -3060,7 +3067,7 @@ p { margin: 0 0 1rem; }
     padding: 10px 18px 12px;
   }
   .opening__guest-name {
-    font-size: clamp(2.18rem, 9vw, 2.55rem);
+    font-size: clamp(1.92rem, 8vw, 2.28rem);
   }
   .opening__panel {
     width: min(100%, 340px);

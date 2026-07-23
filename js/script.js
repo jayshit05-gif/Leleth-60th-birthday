@@ -155,7 +155,7 @@
     const greeting = String(value || "").trim();
     const match = greeting.match(/^dear\s+(.+)$/i);
     if (!match) return `<span class="opening__guest-name">${escapeHtml(greeting)}</span>`;
-    return `<span class="opening__guest-kicker">Dear</span><span class="opening__guest-name">${escapeHtml(match[1])}</span>`;
+    return `<span class="opening__guest-stack"><span class="opening__guest-kicker">Dear</span><span class="opening__guest-name">${escapeHtml(match[1])}</span></span>`;
   }
 
   function setupGuestNameFit() {
