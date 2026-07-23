@@ -1065,7 +1065,10 @@
     const trackerUrl = tracker.appsScriptUrl || tracker.apiUrl;
     if (!safeUrl(trackerUrl)) return "Dear Guest";
     try {
-      const data = await fetchJsonp(trackerUrl, { action: "guest", slug: guestSlug }, 4800);
+      let data = await fetchJsonp(trackerUrl, { action: "guest", slug: guestSlug }, 4800);
+      if (!(data && data.ok && has(data.displayName))) {
+        data = await fetchJsonp(trackerUrl, { action: "guest", guest: guestSlug }, 3200);
+      }
       const displayName = data && data.ok && has(data.displayName) ? String(data.displayName).trim() : "";
       return displayName ? `Dear ${displayName}` : "Dear Guest";
     } catch (error) {

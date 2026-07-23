@@ -69,23 +69,15 @@ function getStats_() {
 
 function getGuestBySlug_(slug) {
   const cleanSlug = String(slug || "").trim().toLowerCase();
-  if (!cleanSlug) return { ok: false, displayName: "" };
+  if (!cleanSlug) return { ok: false, displayName: "", reason: "missing-slug" };
 
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = spreadsheet.getSheetByName(GUEST_SHEET_NAME);
-  if (!sheet) return { ok: false, displayName: "" };
+  const guestTable = getGuestTable_();
+  if (!guestTable) return { ok: false, displayName: "", reason: "guest-table-not-found" };
 
-  const values = sheet.getDataRange().getValues();
-  if (values.length < 2) return { ok: false, displayName: "" };
-
-  const headers = values[0].map(function(header) {
-    return String(header || "").trim().toLowerCase();
-  });
-  const slugIndex = headers.indexOf("slug");
-  const displayNameIndex = headers.indexOf("display name");
-  const fullNameIndex = headers.indexOf("guest name / household");
-
-  if (slugIndex < 0 || displayNameIndex < 0) return { ok: false, displayName: "" };
+  const values = guestTable.values;
+  const slugIndex = guestTable.slugIndex;
+  const displayNameIndex = guestTable.displayNameIndex;
+  const fullNameIndex = guestTable.fullNameIndex;
 
   for (let index = 1; index < values.length; index += 1) {
     const rowSlug = String(values[index][slugIndex] || "").trim().toLowerCase();
@@ -99,7 +91,38 @@ function getGuestBySlug_(slug) {
     }
   }
 
-  return { ok: false, displayName: "" };
+  return { ok: false, displayName: "", reason: "slug-not-found" };
+}
+
+function getGuestTable_() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const preferredSheet = spreadsheet.getSheetByName(GUEST_SHEET_NAME) || spreadsheet.getSheetByName("Guests");
+  const sheets = preferredSheet ? [preferredSheet] : spreadsheet.getSheets();
+
+  for (let sheetIndex = 0; sheetIndex < sheets.length; sheetIndex += 1) {
+    const sheet = sheets[sheetIndex];
+    const values = sheet.getDataRange().getValues();
+    if (values.length < 2) continue;
+
+    const headers = values[0].map(function(header) {
+      return String(header || "").trim().toLowerCase();
+    });
+    const slugIndex = headers.indexOf("slug");
+    const displayNameIndex = headers.indexOf("display name");
+    const fullNameIndex = headers.indexOf("guest name / household");
+
+    if (slugIndex >= 0 && displayNameIndex >= 0) {
+      return {
+        sheetName: sheet.getName(),
+        values: values,
+        slugIndex: slugIndex,
+        displayNameIndex: displayNameIndex,
+        fullNameIndex: fullNameIndex
+      };
+    }
+  }
+
+  return null;
 }
 
 function upsertGuest_(sheet, data) {
