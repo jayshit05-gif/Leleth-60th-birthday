@@ -173,16 +173,6 @@ theme: {
 
 You can also adjust `borderRadius`, `overlayOpacity`, and `sectionSpacing`.
 
-## Generate And Replace The QR Code
-
-Deploy the website first so you have the final URL. Generate a QR code using any trusted QR generator, save it into `assets/qr/`, then update:
-
-```js
-qrCode: "assets/qr/your-qr-code.png"
-```
-
-The included QR is only a placeholder.
-
 ## Vercel Deployment
 
 This is a no-build static project. Import the GitHub repository into Vercel with these settings:

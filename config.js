@@ -49,7 +49,6 @@ window.INVITATION_CONFIG = {
       mobileHero: "assets/images/wedding-hero.jpg",
       background: "assets/images/texture.jpg",
       profile: "assets/images/wedding-gallery-1.jpg",
-      qrCode: "assets/qr/qr-placeholder.svg",
       heroPositionDesktop: "center center",
       heroPositionMobile: "center center",
       gallery: [
@@ -171,7 +170,6 @@ window.INVITATION_CONFIG = {
       mobileHero: "assets/images/mom-60-umbrella-hero.jpg",
       background: "assets/images/texture.jpg",
       profile: "assets/images/birthday-hero.jpg",
-      qrCode: "assets/qr/qr-placeholder.svg",
       heroPositionDesktop: "68% center",
       heroPositionMobile: "70% center",
       photoBreaks: [
@@ -296,7 +294,6 @@ window.INVITATION_CONFIG = {
     mobileHero: "assets/images/mom-60-umbrella-hero.jpg",
     background: "assets/images/texture.jpg",
     profile: "assets/images/birthday-hero.jpg",
-    qrCode: "assets/qr/qr-placeholder.svg",
     heroPositionDesktop: "68% center",
     heroPositionMobile: "70% center",
     photoBreaks: [
