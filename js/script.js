@@ -12,6 +12,7 @@
   const query = new URLSearchParams(window.location.search);
   const guestSlug = getGuestSlug();
   let guestName = "Dear Guest";
+  let guestMaxGuests = 3;
   let openedSessionKey = "";
   let rsvpStorageKey = "";
   const eventStart = new Date(`${config.eventDate || ""}T${config.startTime || "00:00"}`);
@@ -77,7 +78,9 @@
   }
 
   async function init() {
-    guestName = await resolveGuestName();
+    const resolvedGuest = await resolveGuest();
+    guestName = resolvedGuest.guestName;
+    guestMaxGuests = resolvedGuest.maxGuests;
     updateGuestStorageKeys();
     applyTheme();
     fillText();
@@ -599,6 +602,10 @@
       message: "",
       contact: ""
     };
+    const guestCountOptions = Array.from(
+      { length: Math.max(1, Math.min(toCount(guestMaxGuests) || 3, 10)) },
+      (_, index) => index + 1
+    );
 
     const showFlow = (eventClick) => {
       if (eventClick) eventClick.preventDefault();
@@ -637,7 +644,7 @@
           <div class="rsvp-field" data-attending-only>
             <label>How many guests are attending?</label>
             <div class="choice-row choice-row--compact" role="group" aria-label="Guest count">
-              ${[1, 2, 3].map((count) => `<button class="choice${state.guestCount === String(count) ? " is-selected" : ""}" type="button" data-count="${count}">${count}</button>`).join("")}
+              ${guestCountOptions.map((count) => `<button class="choice${state.guestCount === String(count) ? " is-selected" : ""}" type="button" data-count="${count}">${count}</button>`).join("")}
             </div>
           </div>
 
@@ -1066,20 +1073,24 @@
     return String(query.get("guest") || "").replace(/\+/g, " ").trim();
   }
 
-  async function resolveGuestName() {
-    if (!has(guestSlug)) return getGuestName();
+  async function resolveGuest() {
+    const fallback = { guestName: getGuestName(), maxGuests: 3 };
+    if (!has(guestSlug)) return fallback;
     const tracker = config.rsvpTracker || {};
     const trackerUrl = tracker.appsScriptUrl || tracker.apiUrl;
-    if (!safeUrl(trackerUrl)) return "Dear Guest";
+    if (!safeUrl(trackerUrl)) return { guestName: "Dear Guest", maxGuests: 3 };
     try {
       let data = await fetchJsonp(trackerUrl, { action: "guest", slug: guestSlug }, 4800);
       if (!(data && data.ok && has(data.displayName))) {
         data = await fetchJsonp(trackerUrl, { action: "guest", guest: guestSlug }, 3200);
       }
       const displayName = data && data.ok && has(data.displayName) ? String(data.displayName).trim() : "";
-      return displayName ? `Dear ${displayName}` : "Dear Guest";
+      return {
+        guestName: displayName ? `Dear ${displayName}` : "Dear Guest",
+        maxGuests: Math.max(toCount(data && data.maxGuests) || 3, 1)
+      };
     } catch (error) {
-      return "Dear Guest";
+      return { guestName: "Dear Guest", maxGuests: 3 };
     }
   }
 

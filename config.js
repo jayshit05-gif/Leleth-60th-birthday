@@ -270,7 +270,7 @@ window.INVITATION_CONFIG = {
   },
   rsvpTracker: {
     enabled: true,
-    totalGuests: 50,
+    totalGuests: 56,
     accepted: 0,
     declined: 0,
     pendingLabel: "Not Yet Responded",

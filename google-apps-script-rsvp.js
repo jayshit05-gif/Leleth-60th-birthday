@@ -1,15 +1,19 @@
 const SHEET_NAME = "RSVP";
 const GUEST_SHEET_NAME = "Guest List";
-const TOTAL_GUESTS = 50;
+const TOTAL_GUESTS = 56;
 const GUEST_SLUG_ALIASES = {
-  "sk-parent": "Leberato & Ferdoniza",
-  "sk-parents": "Leberato & Ferdoniza",
-  "leberato-ferdoniza": "Leberato & Ferdoniza",
-  "leberato-and-ferdoniza": "Leberato & Ferdoniza",
+  "sk-parent": "Liberato & Ferdoniza",
+  "sk-parents": "Liberato & Ferdoniza",
+  "leberato-ferdoniza": "Liberato & Ferdoniza",
+  "leberato-and-ferdoniza": "Liberato & Ferdoniza",
+  "liberato-ferdoniza": "Liberato & Ferdoniza",
+  "liberato-and-ferdoniza": "Liberato & Ferdoniza",
   "haydee-parent": "Mustiola & Avelino",
   "haydee-parents": "Mustiola & Avelino",
   "mustiola-avelino": "Mustiola & Avelino",
-  "mustiola-and-avelino": "Mustiola & Avelino"
+  "mustiola-and-avelino": "Mustiola & Avelino",
+  "gina-palates-and-joe": "Gina & Joe",
+  "voltez-five": "Voltez 5"
 };
 
 function doGet(e) {
@@ -88,6 +92,7 @@ function getGuestBySlug_(slug) {
   const slugIndex = guestTable.slugIndex;
   const displayNameIndex = guestTable.displayNameIndex;
   const fullNameIndex = guestTable.fullNameIndex;
+  const maxGuestsIndex = guestTable.maxGuestsIndex;
   const aliasDisplayName = GUEST_SLUG_ALIASES[cleanSlug] || "";
   const aliasKey = normalizeGuestKey_(aliasDisplayName);
 
@@ -103,7 +108,8 @@ function getGuestBySlug_(slug) {
           ok: true,
           slug: rowSlug,
           displayName: displayName || aliasDisplayName,
-          fullName: fullName
+          fullName: fullName,
+          maxGuests: maxGuestsIndex >= 0 ? Math.max(Number(values[index][maxGuestsIndex]) || 1, 1) : 1
         };
       }
     }
@@ -112,7 +118,8 @@ function getGuestBySlug_(slug) {
       ok: true,
       slug: String(slug || "").trim(),
       displayName: aliasDisplayName,
-      fullName: aliasDisplayName
+      fullName: aliasDisplayName,
+      maxGuests: 1
     };
   }
 
@@ -131,7 +138,8 @@ function getGuestBySlug_(slug) {
         ok: true,
         slug: rowSlug,
         displayName: displayName || aliasDisplayName,
-        fullName: fullName
+        fullName: fullName,
+        maxGuests: maxGuestsIndex >= 0 ? Math.max(Number(values[index][maxGuestsIndex]) || 1, 1) : 1
       };
     }
   }
@@ -165,6 +173,7 @@ function getGuestTable_() {
     const slugIndex = headers.indexOf("slug");
     const displayNameIndex = headers.indexOf("display name");
     const fullNameIndex = headers.indexOf("guest name / household");
+    const maxGuestsIndex = headers.indexOf("max guests");
 
     if (slugIndex >= 0 && displayNameIndex >= 0) {
       return {
@@ -172,7 +181,8 @@ function getGuestTable_() {
         values: values,
         slugIndex: slugIndex,
         displayNameIndex: displayNameIndex,
-        fullNameIndex: fullNameIndex
+        fullNameIndex: fullNameIndex,
+        maxGuestsIndex: maxGuestsIndex
       };
     }
   }

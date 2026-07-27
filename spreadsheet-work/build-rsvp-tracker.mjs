@@ -1,9 +1,13 @@
 import fs from "node:fs/promises";
-import { SpreadsheetFile, Workbook } from "@oai/artifact-tool";
+import { FileBlob, SpreadsheetFile, Workbook } from "@oai/artifact-tool";
 
 const outputDir = "C:/Users/jay/Downloads/moumeants-and-frames-FIXED/outputs/mom-60th-rsvp";
 const outputPath = `${outputDir}/leleth-60th-birthday-rsvp-tracker.xlsx`;
-const guestCsvPath = "C:/Users/jay/Downloads/leleth_60th_guest_database - Guests (1).csv";
+const guestWorkbookPath = "C:/Users/jay/Downloads/leleth_60th_guest_database (1).xlsx";
+const baseUrl = "https://moumeants.com";
+const slugCorrections = {
+  "gina-palates-and-joe": "gina-panares-and-joe",
+};
 
 const workbook = Workbook.create();
 workbook.comments.setSelf({ displayName: "User" });
@@ -63,8 +67,148 @@ function parseCsv(text) {
   );
 }
 
-const guestRecords = parseCsv(await fs.readFile(guestCsvPath, "utf8"));
-const plannedGuestCount = guestRecords.reduce(
+function slugify(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+}
+
+function slugFromLink(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return slugify(url.searchParams.get("guest") || "");
+  } catch (error) {
+    return "";
+  }
+}
+
+function cleanGuestRecord(row) {
+  const displayName = row["Display Name"] || row["Guest Name / Household"] || "";
+  const linkSlug = slugFromLink(row["Personalized Link"]);
+  const rawSlug = linkSlug || slugify(row["Slug"] || displayName);
+  const canonicalSlug = slugCorrections[rawSlug] || rawSlug;
+  return {
+    "Invite ID": row["Invite ID"],
+    "Slug": canonicalSlug,
+    "Group": row["Group"],
+    "Guest Name / Household": row["Guest Name / Household"],
+    "Display Name": displayName,
+    "Max Guests": Number(row["Max Guests"]) || null,
+    "RSVP Status": row["RSVP Status"] || "Pending",
+    "Attending Count": Number(row["Attending Count"]) || null,
+    "Message": row["Message"] || "",
+    "Notes": row["Notes"] || "",
+    "Personalized Link": `${baseUrl}/?guest=${canonicalSlug}`,
+  };
+}
+
+function guestRecord(overrides) {
+  const slug = slugify(overrides.slug || overrides.displayName);
+  const displayName = overrides.displayName || overrides.household;
+  return {
+    "Invite ID": overrides.inviteId,
+    "Slug": slug,
+    "Group": overrides.group,
+    "Guest Name / Household": overrides.household,
+    "Display Name": displayName,
+    "Max Guests": overrides.maxGuests,
+    "RSVP Status": "Pending",
+    "Attending Count": null,
+    "Message": "",
+    "Notes": overrides.notes || "",
+    "Personalized Link": `${baseUrl}/?guest=${slug}`,
+  };
+}
+
+function applyGuestSplits(records) {
+  const splitInviteIds = new Set(["INV-033", "INV-034", "INV-035"]);
+  const baseRecords = records.filter((row) => !splitInviteIds.has(row["Invite ID"]));
+  return [
+    ...baseRecords,
+    guestRecord({
+      inviteId: "INV-033",
+      slug: "voltez-five",
+      group: "Voltez 5",
+      household: "Voltez 5",
+      displayName: "Voltez 5",
+      maxGuests: 1,
+    }),
+    guestRecord({
+      inviteId: "INV-034",
+      slug: "joemon",
+      group: "Friends / Colleagues",
+      household: "Joemon",
+      displayName: "Joemon",
+      maxGuests: 1,
+    }),
+    guestRecord({
+      inviteId: "INV-035",
+      slug: "renan",
+      group: "Friends / Colleagues",
+      household: "Renan",
+      displayName: "Renan",
+      maxGuests: 1,
+    }),
+    guestRecord({
+      inviteId: "INV-036",
+      slug: "camille-and-shenna",
+      group: "Friends / Colleagues",
+      household: "Camille and Shenna",
+      displayName: "Camille and Shenna",
+      maxGuests: 2,
+    }),
+    guestRecord({
+      inviteId: "INV-037",
+      slug: "ken",
+      group: "Friends / Colleagues",
+      household: "Ken",
+      displayName: "Ken",
+      maxGuests: 1,
+    }),
+  ];
+}
+
+const sourceInput = await FileBlob.load(guestWorkbookPath);
+const sourceWorkbook = await SpreadsheetFile.importXlsx(sourceInput);
+const sourceSheet = sourceWorkbook.worksheets.getItem("Guests");
+const sourceValues = sourceSheet.getUsedRange(true).values;
+const [sourceHeaders, ...sourceRows] = sourceValues;
+const guestRecords = sourceRows
+  .filter((row) => row.some((value) => value !== null && value !== undefined && String(value).trim() !== ""))
+  .map((row) => Object.fromEntries(sourceHeaders.map((header, index) => [header, row[index] ?? ""])))
+  .map(cleanGuestRecord)
+  .sort((a, b) => String(a["Invite ID"]).localeCompare(String(b["Invite ID"])));
+const cleanedGuestRecords = applyGuestSplits(guestRecords);
+const guestBySlug = new Map(cleanedGuestRecords.map((row) => [row["Slug"], row]));
+
+function cleanRsvpRecord(row) {
+  const linkSlug = slugCorrections[slugFromLink(row["Guest Link"])] || slugFromLink(row["Guest Link"]);
+  const guest = String(row["Guest"] || "").trim();
+  const matchedGuest = guestBySlug.get(linkSlug);
+  return {
+    "Submitted At": row["Submitted At"] || null,
+    "Guest": guest && guest.toLowerCase() !== "guest" ? guest : matchedGuest?.["Display Name"] || guest || "",
+    "Attendance": row["Attendance"] || "",
+    "Guest Count": Number(row["Guest Count"]) || null,
+    "Birthday Message": row["Birthday Message"] || "",
+    "Contact Number": row["Contact Number"] || "",
+    "Event Name": row["Event Name"] || "Leleth's 60th Birthday",
+    "Guest Link": linkSlug ? `${baseUrl}/?guest=${linkSlug}` : row["Guest Link"] || "",
+  };
+}
+
+const sourceRsvpSheet = sourceWorkbook.worksheets.getItem("RSVP");
+const sourceRsvpValues = sourceRsvpSheet.getUsedRange(true).values;
+const [sourceRsvpHeaders, ...sourceRsvpRows] = sourceRsvpValues;
+const rsvpRecords = sourceRsvpRows
+  .filter((row) => row.some((value) => value !== null && value !== undefined && String(value).trim() !== ""))
+  .map((row) => Object.fromEntries(sourceRsvpHeaders.map((header, index) => [header, row[index] ?? ""])))
+  .map(cleanRsvpRecord);
+const plannedGuestCount = cleanedGuestRecords.reduce(
   (sum, row) => sum + (Number(row["Max Guests"]) || 0),
   0
 );
@@ -88,14 +232,14 @@ setup.getRange("A1").format = {
 };
 setup.getRange("A3:B13").values = [
   ["Event Name", "Leleth's 60th Birthday"],
-  ["Event Date", new Date("2026-08-22T00:00:00")],
+  ["Event Date", new Date("2026-08-21T00:00:00")],
   ["Start Time", "4:00 PM"],
-  ["End Time", "10:00 PM"],
-  ["Venue", "The Glass Garden"],
-  ["Venue Address", "257 Evangelista Ave, Pasig, Metro Manila"],
+  ["End Time", "8:00 PM"],
+  ["Venue", "D'Kusinera Cafe-Bistro"],
+  ["Venue Address", "Purok 2, South Poblacion, Maramag, 8714 Bukidnon, Philippines"],
   ["RSVP Deadline", new Date("2026-08-03T00:00:00")],
   ["Target Guest Capacity", plannedGuestCount],
-  ["Invitation Hashtag", "#LelethThePartyBegins"],
+  ["Invitation Hashtag", "#TimeLethss@Sixty"],
   ["Apps Script Sheet Name", "RSVP"],
   ["Status Values", "Accepts, Declines, Pending"],
 ];
@@ -223,7 +367,20 @@ rsvp.getRange("A1:H1").format = {
   font: { bold: true, color: "#FFFFFF" },
   horizontalAlignment: "center",
 };
-rsvp.getRange("A2:H200").values = Array.from({ length: 199 }, () => [null, "", "", null, "", "", "", ""]);
+rsvp.getRange("A2:H200").values = Array.from({ length: 199 }, (_, index) => {
+  const row = rsvpRecords[index];
+  if (!row) return [null, "", "", null, "", "", "", ""];
+  return [
+    row["Submitted At"],
+    row["Guest"],
+    row["Attendance"],
+    row["Guest Count"],
+    row["Birthday Message"],
+    row["Contact Number"],
+    row["Event Name"],
+    row["Guest Link"],
+  ];
+});
 rsvp.getRange("A2:A200").format.numberFormat = "yyyy-mm-dd hh:mm";
 rsvp.getRange("D2:D200").format.numberFormat = "0";
 rsvp.getRange("A:H").format.columnWidth = 18;
@@ -266,10 +423,9 @@ guestList.getRange("A1:N1").format = {
   horizontalAlignment: "center",
 };
 const guestValues = Array.from({ length: guestTableRows - 1 }, (_, index) => {
-  const row = guestRecords[index];
+  const row = cleanedGuestRecords[index];
   if (!row) return ["", "", "", "", "", null, "", null, "", "", "", "", null, ""];
   const displayName = row["Display Name"] || row["Guest Name / Household"] || "";
-  const cleanLink = `https://YOUR-DOMAIN.com/?guest=${encodeURIComponent(row["Slug"] || "").replaceAll("%20", "+")}`;
   return [
     row["Invite ID"],
     row["Slug"],
@@ -281,7 +437,7 @@ const guestValues = Array.from({ length: guestTableRows - 1 }, (_, index) => {
     Number(row["Attending Count"]) || null,
     row["Message"],
     row["Notes"],
-    cleanLink,
+    row["Personalized Link"],
     "",
     null,
     "",
@@ -304,7 +460,7 @@ guestList.getRange("F2:F200").format.numberFormat = "0";
 guestList.getRange("H2:H200").format.numberFormat = "0";
 guestList.getRange("M2:M200").format.numberFormat = "0";
 guestList.getRange("N2:N200").format.numberFormat = "yyyy-mm-dd hh:mm";
-guestList.getRange("C2:C200").dataValidation = { rule: { type: "list", values: ["Friends / Colleagues", "Agusan Family", "Allaba Family", "Lamanilao Siblings", "Other"] } };
+guestList.getRange("C2:C200").dataValidation = { rule: { type: "list", values: ["Friends / Colleagues", "Agusan Family", "Allaba Family", "Allaba Siblings", "Lamanilao Siblings", "Other"] } };
 guestList.getRange("G2:G200").dataValidation = { rule: { type: "list", values: ["Accepts", "Declines", "Pending"] } };
 guestList.getRange("L2:L200").dataValidation = { rule: { type: "list", values: ["Accepts", "Declines", "Pending"] } };
 guestList.getRange("A:N").format.columnWidth = 16;
@@ -391,7 +547,7 @@ dashboard.getRange("A12:A16").values = [
   ["1. Add the final invitee names and counts in Guest List."],
   ["2. Import this workbook into Google Sheets, then paste/deploy the Apps Script."],
   ["3. Paste the deployed Web App URL into config.js under rsvpTracker.appsScriptUrl."],
-  ["4. Replace the invitation RSVP link and QR code once the final website URL is ready."],
+  ["4. Send the personalized links from Guest List after the website URL is final."],
   ["5. Keep RSVP tab headers unchanged so the website can submit responses correctly."],
 ];
 dashboard.getRange("A12:H16").format = {
