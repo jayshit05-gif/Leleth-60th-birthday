@@ -155,7 +155,7 @@ function applyGuestSplits(records) {
     }),
     guestRecord({
       inviteId: "INV-036",
-      slug: "camille-and-shenna",
+      slug: "camille-shenna",
       group: "Friends / Colleagues",
       household: "Camille and Shenna",
       displayName: "Camille and Shenna",
