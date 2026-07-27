@@ -325,7 +325,7 @@
         `;
       }).join("");
 
-      note.textContent = `${responded} of ${total} guests have responded. ${data.note || ""}`.trim();
+      note.textContent = `${responded} of ${total} guests have responded.`;
     };
 
     const refresh = async () => {

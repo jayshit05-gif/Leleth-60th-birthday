@@ -76,8 +76,7 @@ function getStats_() {
     totalGuests: TOTAL_GUESTS,
     accepted: accepted,
     declined: declined,
-    pendingLabel: "Not Yet Responded",
-    note: "Live from Google Sheet."
+    pendingLabel: "Not Yet Responded"
   };
 }
 
